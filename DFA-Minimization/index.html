@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DFA Minimization Simulator</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet" />
+</head>
+<body>
+
+  <!-- Toast Notification -->
+  <div id="toast-container"></div>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <div class="nav-inner">
+      <div class="nav-logo">
+        <span class="logo-icon">⬡</span>
+        <span class="logo-text">DFA<span class="accent">·SIM</span></span>
+      </div>
+      <div class="nav-actions">
+        <button id="theme-toggle" class="btn-icon" title="Toggle Theme">◑</button>
+        <button id="example-btn" class="btn-outline">⚡ Load Example</button>
+        <button id="reset-btn" class="btn-outline danger">✕ Reset</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <header class="hero">
+    <div class="hero-bg"></div>
+    <h1 class="hero-title">DFA Minimization<br /><span class="accent">Simulator</span></h1>
+    <p class="hero-sub">Build · Visualize · Test · Minimize Deterministic Finite Automata</p>
+  </header>
+
+  <main class="container">
+
+    <!-- ═══════════════════════════════════════════
+         SECTION 1 — DFA CONFIGURATION
+    ═══════════════════════════════════════════ -->
+    <section class="card" id="config-section">
+      <div class="card-header">
+        <span class="step-badge">01</span>
+        <h2>DFA Configuration</h2>
+      </div>
+      <div class="card-body">
+        <div class="config-grid">
+          <div class="field-group">
+            <label>Number of States</label>
+            <input type="number" id="num-states" min="1" max="20" value="4" placeholder="e.g. 4" />
+          </div>
+          <div class="field-group">
+            <label>Alphabet Symbols <small>(comma-separated)</small></label>
+            <input type="text" id="alphabet" placeholder="e.g. 0,1" value="0,1" />
+          </div>
+          <div class="field-group">
+            <label>Initial State</label>
+            <select id="start-state"></select>
+          </div>
+          <div class="field-group">
+            <label>Final States <small>(hold Ctrl/Cmd to multi-select)</small></label>
+            <select id="final-states" multiple></select>
+          </div>
+        </div>
+        <button id="gen-table-btn" class="btn-primary">⚙ Generate Transition Table</button>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         SECTION 2 — TRANSITION TABLE
+    ═══════════════════════════════════════════ -->
+    <section class="card" id="table-section" style="display:none">
+      <div class="card-header">
+        <span class="step-badge">02</span>
+        <h2>Transition Table</h2>
+        <button id="export-table-btn" class="btn-sm">⬇ Export CSV</button>
+      </div>
+      <div class="card-body">
+        <div class="table-scroll">
+          <table id="transition-table" class="dfa-table"></table>
+        </div>
+        <div class="action-row">
+          <button id="visualize-btn" class="btn-primary">◈ Visualize DFA</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         SECTION 3 — DFA VISUALIZATION
+    ═══════════════════════════════════════════ -->
+    <section class="card" id="visual-section" style="display:none">
+      <div class="card-header">
+        <span class="step-badge">03</span>
+        <h2>DFA Visualization</h2>
+      </div>
+      <div class="card-body">
+        <div id="dfa-visual"></div>
+        <div class="legend">
+          <span class="legend-item"><span class="legend-dot start"></span>Start State</span>
+          <span class="legend-item"><span class="legend-dot final"></span>Final State</span>
+          <span class="legend-item"><span class="legend-dot normal"></span>Normal State</span>
+          <span class="legend-item"><span class="legend-dot both"></span>Start + Final</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         SECTION 4 — STRING TESTER
+    ═══════════════════════════════════════════ -->
+    <section class="card" id="tester-section" style="display:none">
+      <div class="card-header">
+        <span class="step-badge">04</span>
+        <h2>String Tester</h2>
+      </div>
+      <div class="card-body">
+        <div class="tester-row">
+          <input type="text" id="test-string" placeholder="Enter string to test (e.g. 0110)" />
+          <button id="test-btn" class="btn-primary">▶ Simulate</button>
+        </div>
+        <div id="simulation-output" style="display:none">
+          <h3 class="sub-heading">Simulation Trace</h3>
+          <div id="sim-steps" class="sim-steps"></div>
+          <div id="sim-result" class="sim-result"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════
+         SECTION 5 — DFA MINIMIZATION
+    ═══════════════════════════════════════════ -->
+    <section class="card" id="minimize-section" style="display:none">
+      <div class="card-header">
+        <span class="step-badge">05</span>
+        <h2>DFA Minimization</h2>
+      </div>
+      <div class="card-body">
+        <button id="minimize-btn" class="btn-primary">⚡ Run Minimization Algorithm</button>
+        <div id="minimization-output" style="display:none">
+
+          <!-- Step-by-step -->
+          <div class="min-block">
+            <h3 class="sub-heading">Step 1 — Reachable States</h3>
+            <div id="reachable-output"></div>
+          </div>
+
+          <div class="min-block">
+            <h3 class="sub-heading">Step 2 — Remove Unreachable States</h3>
+            <div id="unreachable-output"></div>
+          </div>
+
+          <div class="min-block">
+            <h3 class="sub-heading">Step 3 — Initial Partition</h3>
+            <div id="initial-partition-output"></div>
+          </div>
+
+          <div class="min-block">
+            <h3 class="sub-heading">Step 4 — Partition Refinement Iterations</h3>
+            <div id="refinement-output"></div>
+          </div>
+
+          <div class="min-block">
+            <h3 class="sub-heading">Step 5 — Minimized DFA States</h3>
+            <div id="min-states-output"></div>
+          </div>
+
+          <div class="min-block">
+            <h3 class="sub-heading">Step 6 — Minimized Transition Table</h3>
+            <div class="table-scroll">
+              <table id="min-table" class="dfa-table"></table>
+            </div>
+            <button id="export-min-btn" class="btn-sm" style="margin-top:12px">⬇ Export Minimized CSV</button>
+          </div>
+
+          <div class="min-block">
+            <h3 class="sub-heading">Minimized DFA Visualization</h3>
+            <div id="min-visual"></div>
+          </div>
+
+          <div class="min-block result-summary">
+            <div id="summary-output"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <p>DFA Minimization Simulator &mdash; Pure HTML · CSS · JS &mdash; <span class="accent">No Frameworks</span></p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
