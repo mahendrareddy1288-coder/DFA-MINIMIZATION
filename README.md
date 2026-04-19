@@ -71,13 +71,6 @@ Uses real minimization logic:
 
 ---
 
-## 🛠️ Technologies Used
-
-* **HTML5**
-* **CSS3**
-* **Vanilla JavaScript**
-
----
 
 ## 📂 Project Structure
 
