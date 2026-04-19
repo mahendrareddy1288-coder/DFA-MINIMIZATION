@@ -761,3 +761,91 @@ document.addEventListener('DOMContentLoaded', () => {
   /* Welcome toast */
   setTimeout(() => toast('Welcome! Load an example or configure your DFA.', 'info'), 600);
 });
+
+
+document.addEventListener('DOMContentLoaded', () => {
+
+  /* Config section */
+  document.getElementById('gen-table-btn').addEventListener('click', generateTable);
+
+  /* Auto update when states/alphabet change */
+  document.getElementById('num-states').addEventListener('change', generateTable);
+  document.getElementById('alphabet').addEventListener('change', generateTable);
+
+  /* Visualize button */
+  document.getElementById('visualize-btn').addEventListener('click', visualizeDFA);
+
+  /* String tester */
+  document.getElementById('test-btn').addEventListener('click', testString);
+  document.getElementById('test-string').addEventListener('keydown', e => {
+    if (e.key === 'Enter') testString();
+  });
+
+  /* Minimization */
+  document.getElementById('minimize-btn').addEventListener('click', minimizeDFA);
+
+  /* Example */
+  document.getElementById('example-btn').addEventListener('click', loadExample);
+
+  /* Reset */
+  document.getElementById('reset-btn').addEventListener('click', resetAll);
+
+  /* Theme toggle */
+  document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+
+  /* Export original transition table CSV */
+  document.getElementById('export-table-btn').addEventListener('click', () => {
+    if (!validateDFA()) return;
+
+    exportCSV(
+      DFA.states,
+      DFA.alphabet,
+      DFA.startState,
+      DFA.finalStates,
+      DFA.transitions,
+      'dfa_original.csv'
+    );
+  });
+
+  /* Export minimized table CSV */
+  document.getElementById('export-min-btn').addEventListener('click', () => {
+    const minTbl = document.getElementById('min-table');
+
+    if (!minTbl.rows.length) {
+      toast('Run minimization first!', 'error');
+      return;
+    }
+
+    const rows = [...minTbl.rows];
+    const header = [...rows[0].cells].map(c => c.textContent.trim());
+    const csvLines = [header.join(',')];
+
+    rows.slice(1).forEach(row => {
+      csvLines.push(
+        [...row.cells]
+          .map(c => c.textContent.trim().replace(/,/g, ';'))
+          .join(',')
+      );
+    });
+
+    const blob = new Blob([csvLines.join('\n')], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'dfa_minimized.csv';
+    a.click();
+
+    URL.revokeObjectURL(url);
+    toast('Exported dfa_minimized.csv', 'success');
+  });
+
+  /* Welcome toast */
+  setTimeout(() => {
+    toast('Welcome! Load an example or configure your DFA.', 'info');
+  }, 600);
+
+  /* AUTO LOAD STATES ON PAGE OPEN */
+  generateTable();
+
+});
